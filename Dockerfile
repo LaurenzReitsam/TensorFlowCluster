@@ -1,5 +1,3 @@
-FROM Tensorflow
+FROM tensorflow/tensorflow
 
-COPY train.py /app
-
-CMD python3 /app/train.py
+COPY train.py /usr/src/app/

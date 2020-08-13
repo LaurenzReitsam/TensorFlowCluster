@@ -27,10 +27,10 @@ spec:
       containers:
 
       - name: tensorflow
-        image: tensorflow/tensorflow
+        image: tensorflow_env
         resources:
           limits:
-            nvidia.com/gpu: 2
+            # nvidia.com/gpu: 2
 
         env:
 
@@ -52,7 +52,7 @@ spec:
 
 ---
 
-  
+
 kind: Service
 apiVersion: v1
 metadata:
@@ -82,10 +82,10 @@ spec:
       containers:
 
       - name: tensorflow
-        image: tensorflow/tensorflow
+        image: tensorflow_env
         resources:
           limits:
-            nvidia.com/gpu: 2
+            # nvidia.com/gpu: 2
 
         env:
 
