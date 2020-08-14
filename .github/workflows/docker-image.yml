@@ -16,3 +16,4 @@ jobs:
         run: docker tag myimage:latest myimage:1.0
       - name: Push the Docker image to the registry
         run: docker push myimage:1.0
+
