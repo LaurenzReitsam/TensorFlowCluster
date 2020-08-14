@@ -20,7 +20,9 @@ jobs:
     - name: Build and push Docker images
       uses: docker/build-push-action@v1
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        username: lreitsam
+        password: Computer123!
+#         username: ${{ secrets.DOCKER_USERNAME }}
+#         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: myrepo-01
         tags: latest
