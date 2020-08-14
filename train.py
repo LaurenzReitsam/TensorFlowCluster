@@ -51,15 +51,15 @@ try:
     with strategy.scope():
         multi_worker_model = build_and_compile_cnn_model()
 
-    print("Create TensorBoard Callback")
-    log_dir = "/data_volume/logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    # print("Create TensorBoard Callback")
+    # log_dir = "/data_volume/logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    # tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
     print("Fitting Model", file=f)
     multi_worker_model.fit(multi_worker_dataset,
                           epochs=60,
                           steps_per_epoch=60,
-                          callbacks=[tensorboard_callback])
+                          callbacks=[])
 
     print("Done!", file=f)
 
