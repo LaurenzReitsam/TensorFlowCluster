@@ -37,15 +37,22 @@ per_worker_batch_size = 32
 num_workers = 2
 
 global_batch_size = per_worker_batch_size * num_workers
+
+print("Loading Data")
 multi_worker_dataset = mnist_dataset(global_batch_size)
 
+print("Building Model")
 with strategy.scope():
     multi_worker_model = build_and_compile_cnn_model()
 
+print("Create TensorBoard Callback")
 log_dir = "/data_volume/logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
+print("Fitting Model")
 multi_worker_model.fit(multi_worker_dataset,
                       epochs=60,
                       steps_per_epoch=60,
                       callbacks=[tensorboard_callback])
+
+print("Done!")
