@@ -21,6 +21,6 @@ jobs:
       uses: docker/build-push-action@v1
       with:
         username: lreitsam
-        password: Computer123
+        password: Computer123!
         repository: myrepo
         tags: latest
