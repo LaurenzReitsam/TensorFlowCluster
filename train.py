@@ -6,6 +6,10 @@ import tensorflow as tf
 import numpy as np
 import datetime
 
+f = open('./logs.txt', 'w')
+
+print("Starting procedure", file=f)
+
 def mnist_dataset(batch_size):
     (x_train, y_train), _ = tf.keras.datasets.mnist.load_data()
     x_train = x_train / np.float32(255)
@@ -38,10 +42,10 @@ num_workers = 2
 
 global_batch_size = per_worker_batch_size * num_workers
 
-print("Loading Data")
+print("Loading Data", file=f)
 multi_worker_dataset = mnist_dataset(global_batch_size)
 
-print("Building Model")
+print("Building Model", file=f)
 with strategy.scope():
     multi_worker_model = build_and_compile_cnn_model()
 
@@ -49,10 +53,10 @@ print("Create TensorBoard Callback")
 log_dir = "/data_volume/logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-print("Fitting Model")
+print("Fitting Model", file=f)
 multi_worker_model.fit(multi_worker_dataset,
                       epochs=60,
                       steps_per_epoch=60,
                       callbacks=[tensorboard_callback])
 
-print("Done!")
+print("Done!", file=f)
