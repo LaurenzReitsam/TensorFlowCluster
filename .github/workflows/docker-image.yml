@@ -20,7 +20,5 @@ jobs:
     - name: Build and push Docker images
       uses: docker/build-push-action@v1
       with:
-        username: lreitsam
-        password: Computer123!
-        repository: myrepo
+        repository: myrepo-01
         tags: latest
