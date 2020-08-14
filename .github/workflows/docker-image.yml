@@ -1,7 +1,9 @@
 name: Publish Docker image
 on:
-  release:
-    types: [master]
+  push:
+    # Publish `master` as Docker `latest` image.
+    branches:
+      - master
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
