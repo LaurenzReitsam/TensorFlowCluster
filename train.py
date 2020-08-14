@@ -33,7 +33,7 @@ def build_and_compile_cnn_model():
 
 strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
-per_worker_batch_size = 64
+per_worker_batch_size = 32
 num_workers = 2
 
 global_batch_size = per_worker_batch_size * num_workers
