@@ -15,3 +15,4 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: my-docker-hub-namespace/myrepo-01
+          tag_with_ref: true
