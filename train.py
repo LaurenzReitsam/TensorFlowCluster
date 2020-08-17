@@ -19,9 +19,9 @@ def load_data(path='/usr/src/app/mnist.npz'):
     return (x_train, y_train), (x_test, y_test)
 
 def mnist_dataset(batch_size):
-    logging("Loading Data.")
+    logging("   Loading Data.")
     (x_train, y_train), _ = load_data()
-    logging("Loading Data done.")
+    logging("   Loading Data done.")
     x_train = x_train / np.float32(255)
     y_train = y_train.astype(np.int64)
     train_dataset = tf.data.Dataset.from_tensor_slices(
@@ -29,6 +29,7 @@ def mnist_dataset(batch_size):
     return train_dataset
 
 def build_and_compile_cnn_model():
+    logging("   Starting Sequential")
     model = tf.keras.Sequential([
       tf.keras.Input(shape=(28, 28)),
       tf.keras.layers.Reshape(target_shape=(28, 28, 1)),
@@ -37,11 +38,13 @@ def build_and_compile_cnn_model():
       tf.keras.layers.Dense(128, activation='relu'),
       tf.keras.layers.Dense(10)
       ])
-
+    logging("   Sequential done.")
+    logging("   Starting Compiling")
     model.compile(
       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
       optimizer=tf.keras.optimizers.SGD(learning_rate=0.001),
       metrics=['accuracy'])
+    logging("   Compiling done")
     return model
 
 logging("Setting Strategy")
