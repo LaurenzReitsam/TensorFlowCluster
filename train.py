@@ -2,14 +2,15 @@
 Code with training definition here
 """
 
-import tensorflow as tf
-import numpy as np
-import datetime
-
-
 def logging(text):
     with open('/usr/src/app/logs.txt', 'a') as f:
         print(text, file=f)
+
+logging("Starting script.")
+
+import tensorflow as tf
+import numpy as np
+import datetime
 
 def mnist_dataset(batch_size):
     logging("Loading Data.")
