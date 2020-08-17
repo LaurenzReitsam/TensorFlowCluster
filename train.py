@@ -8,13 +8,12 @@ import datetime
 import socket
 
 hostname = socket.gethostname()
+starting_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+logfile_name = '/data_volume/{}_train_logs_{}.txt'.format(starting_time, hostname)
 
 def logging(text):
-    with open('/data_volume/train_logs_{}.txt'.format(hostname), 'a') as f:
+    with open(logfile_name, 'a') as f:
         print("{}  -  {}".format(datetime.datetime.now().strftime("%H:%M:%S"), text), file=f)
-
-tic = datetime.datetime.now()
-logging("Starting script.")
 
 def load_data(path='/usr/src/app/mnist.npz'):
     with np.load(path, allow_pickle=True) as f:
@@ -46,6 +45,11 @@ def build_and_compile_cnn_model():
       metrics=['accuracy'])
     return model
 
+#---------------------------------------------------------------------------#
+
+tic = datetime.datetime.now()
+logging("Starting script.")
+
 strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
 per_worker_batch_size = 32
@@ -68,9 +72,8 @@ logging("Fitting Model")
 multi_worker_model.fit(multi_worker_dataset,
                       epochs=60,
                       steps_per_epoch=60,
-                      callbacks=[])
+                      callbacks=[tensorboard_callback])
 
 toc = datetime.datetime.now()
-
 logging("Done!")
 logging("Total calculation time: {}".format(toc-tic))
