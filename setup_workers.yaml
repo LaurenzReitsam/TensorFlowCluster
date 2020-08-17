@@ -39,6 +39,14 @@ spec:
     task: "0"
   ports:
   - port: 5000
+    name: tcp
+  - port: 8080
+    targetPort: 80
+    protocol: TCP
+    name: http
+  - port: 443
+    protocol: TCP
+    name: https
 ---
 
 apiVersion: v1
@@ -77,12 +85,15 @@ spec:
                   }"
         ports:
         - containerPort: 5000
+        - containerPort: 443
+        - containerPort: 80
         volumeMounts:
         - mountPath: "/data_volume"
           name: task-pv-storage
-        command:
-        - "/usr/bin/python3"
-        - "/usr/src/app/train.py"
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "while true; do sleep 30; done;" ]
+        # - "/usr/bin/python3"
+        # - "/usr/src/app/train.py"
 ---
 
 apiVersion: v1
@@ -97,6 +108,14 @@ spec:
     task: "1"
   ports:
   - port: 5000
+    name: tcp
+  - port: 8080
+    targetPort: 80
+    protocol: TCP
+    name: http
+  - port: 443
+    protocol: TCP
+    name: https
 ---
 
 apiVersion: v1
@@ -135,11 +154,13 @@ spec:
                   }"
         ports:
         - containerPort: 5000
+        - containerPort: 443
+        - containerPort: 80
         volumeMounts:
         - mountPath: "/data_volume"
           name: task-pv-storage
-        command:
-        - "/usr/bin/python3"
-        - "/usr/src/app/train.py"
+        # command:
+        # - "/usr/bin/python3"
+        # - "/usr/src/app/train.py"
 
 ---

@@ -12,9 +12,15 @@ import tensorflow as tf
 import numpy as np
 import datetime
 
+def load_data(path='mnist.npz'):
+    with np.load(path, allow_pickle=True) as f:
+        x_train, y_train = f['x_train'], f['y_train']
+        x_test, y_test = f['x_test'], f['y_test']
+    return (x_train, y_train), (x_test, y_test)
+
 def mnist_dataset(batch_size):
     logging("Loading Data.")
-    (x_train, y_train), _ = tf.keras.datasets.mnist.load_data()
+    (x_train, y_train), _ = load_data()
     logging("Loading Data done.")
     x_train = x_train / np.float32(255)
     y_train = y_train.astype(np.int64)
