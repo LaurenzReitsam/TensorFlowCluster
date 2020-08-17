@@ -148,7 +148,7 @@ spec:
                     \"cluster\": {\"worker\": [\"cluster-worker-0:5000\",\"cluster-worker-1:5000\"]},
                     \"task\": {
                     \"type\": \"worker\",
-                    \"index\": \"0\"
+                    \"index\": \"1\"
                     }
                   }"
         ports:

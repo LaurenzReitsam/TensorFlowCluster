@@ -2,15 +2,19 @@
 Code with training definition here
 """
 
-def logging(text):
-    with open('/usr/src/app/logs.txt', 'a') as f:
-        print(text, file=f)
-
-logging("Starting script.")
-
 import tensorflow as tf
 import numpy as np
 import datetime
+import socket
+
+hostname = socket.gethostname()
+
+def logging(text):
+    with open('/data_volume/train_logs_{}.txt'.format(hostname), 'a') as f:
+        print("{}  -  {}".format(datetime.datetime.now().strftime("%H:%M:%S"), text), file=f)
+
+tic = datetime.datetime.now()
+logging("Starting script.")
 
 def load_data(path='/usr/src/app/mnist.npz'):
     with np.load(path, allow_pickle=True) as f:
@@ -19,9 +23,7 @@ def load_data(path='/usr/src/app/mnist.npz'):
     return (x_train, y_train), (x_test, y_test)
 
 def mnist_dataset(batch_size):
-    logging("   Loading Data.")
     (x_train, y_train), _ = load_data()
-    logging("   Loading Data done.")
     x_train = x_train / np.float32(255)
     y_train = y_train.astype(np.int64)
     train_dataset = tf.data.Dataset.from_tensor_slices(
@@ -29,7 +31,6 @@ def mnist_dataset(batch_size):
     return train_dataset
 
 def build_and_compile_cnn_model():
-    logging("   Starting Sequential")
     model = tf.keras.Sequential([
       tf.keras.Input(shape=(28, 28)),
       tf.keras.layers.Reshape(target_shape=(28, 28, 1)),
@@ -38,36 +39,30 @@ def build_and_compile_cnn_model():
       tf.keras.layers.Dense(128, activation='relu'),
       tf.keras.layers.Dense(10)
       ])
-    logging("   Sequential done.")
-    logging("   Starting Compiling")
+
     model.compile(
       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
       optimizer=tf.keras.optimizers.SGD(learning_rate=0.001),
       metrics=['accuracy'])
-    logging("   Compiling done")
     return model
 
-logging("Setting Strategy")
 strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-logging("Setting Strategy done.")
 
 per_worker_batch_size = 32
 num_workers = 2
 
 global_batch_size = per_worker_batch_size * num_workers
 
-logging("Generating batched data.")
+logging("Loading data.")
 multi_worker_dataset = mnist_dataset(global_batch_size)
-logging("Generating batched data done.")
 
 logging("Building Model")
 with strategy.scope():
     multi_worker_model = build_and_compile_cnn_model()
-logging("Building Model done.")
 
-# print("Create TensorBoard Callback")
-# log_dir = "/data_volume/logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-# tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+print("Create TensorBoard Callback")
+log_dir = "/data_volume/logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 logging("Fitting Model")
 multi_worker_model.fit(multi_worker_dataset,
@@ -75,4 +70,7 @@ multi_worker_model.fit(multi_worker_dataset,
                       steps_per_epoch=60,
                       callbacks=[])
 
+toc = datetime.datetime.now()
+
 logging("Done!")
+logging("Total calculation time: {}".format(toc-tic))
