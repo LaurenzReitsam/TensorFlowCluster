@@ -90,10 +90,9 @@ spec:
         volumeMounts:
         - mountPath: "/data_volume"
           name: task-pv-storage
-        command: [ "/bin/bash", "-c", "--" ]
-        args: [ "while true; do sleep 30; done;" ]
-        # - "/usr/bin/python3"
-        # - "/usr/src/app/train.py"
+        command:
+        - "/usr/bin/python3"
+        - "/usr/src/app/train.py"
 ---
 
 apiVersion: v1
@@ -159,8 +158,8 @@ spec:
         volumeMounts:
         - mountPath: "/data_volume"
           name: task-pv-storage
-        # command:
-        # - "/usr/bin/python3"
-        # - "/usr/src/app/train.py"
+        command:
+        - "/usr/bin/python3"
+        - "/usr/src/app/train.py"
 
 ---
