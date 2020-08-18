@@ -74,8 +74,8 @@ multi_worker_model.fit(multi_worker_dataset,
                       steps_per_epoch=60,
                       callbacks=[tensorboard_callback])
 
-toc = datetime.datetime.now()
-logging("Done!")
 
+toc = datetime.datetime.now()
 running_time = datetime.timedelta(toc-tic).total_seconds()
+logging("Done!")
 logging("Total calculation time: {} sec".format(running_time))

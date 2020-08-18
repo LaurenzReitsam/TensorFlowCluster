@@ -39,14 +39,6 @@ spec:
     task: "0"
   ports:
   - port: 5000
-    name: tcp
-  - port: 8080
-    targetPort: 80
-    protocol: TCP
-    name: http
-  - port: 443
-    protocol: TCP
-    name: https
 ---
 
 apiVersion: v1
@@ -85,8 +77,6 @@ spec:
                   }"
         ports:
         - containerPort: 5000
-        - containerPort: 443
-        - containerPort: 80
         volumeMounts:
         - mountPath: "/data_volume"
           name: task-pv-storage
@@ -107,14 +97,7 @@ spec:
     task: "1"
   ports:
   - port: 5000
-    name: tcp
-  - port: 8080
-    targetPort: 80
-    protocol: TCP
-    name: http
-  - port: 443
-    protocol: TCP
-    name: https
+
 ---
 
 apiVersion: v1
@@ -153,13 +136,59 @@ spec:
                   }"
         ports:
         - containerPort: 5000
-        - containerPort: 443
-        - containerPort: 80
         volumeMounts:
         - mountPath: "/data_volume"
           name: task-pv-storage
         command:
         - "/usr/bin/python3"
         - "/usr/src/app/train.py"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cluster-tensorboard
+spec:
+  type: LoadBalancer
+  selector:
+    name: cluster
+    job: tensorboard
+    task: "2"
+  ports:
+  - port: 5000
+
+---
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: cluster-tensorboard
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: cluster
+        job: tensorboard
+        task: "2"
+    spec:
+      volumes:
+      - name: task-pv-storage
+        persistentVolumeClaim:
+          claimName: task-pv-claim
+      containers:
+      - name: tensorboard
+        image: tensorflow/tensorflow
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: "/data_volume"
+          name: task-pv-storage
+        command:
+        - "tensorboard"
+        args:
+        - "--logdir=/data_volume/logs/fit/"
+        - "--port=5000"
 
 ---
