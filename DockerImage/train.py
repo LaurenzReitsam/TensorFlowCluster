@@ -76,6 +76,6 @@ multi_worker_model.fit(multi_worker_dataset,
 
 
 toc = datetime.datetime.now()
-running_time = datetime.timedelta(toc-tic).total_seconds()
+running_time = datetime.timedelta((toc-tic).microseconds).total_seconds()
 logging("Done!")
 logging("Total calculation time: {} sec".format(running_time))
