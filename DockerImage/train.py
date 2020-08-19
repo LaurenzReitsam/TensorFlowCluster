@@ -71,7 +71,7 @@ strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
 BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
 
-STEPS_PER_EPOCH = BUFFER_SIZE // BATCH_SIZE
+STEPS_PER_EPOCH = len(multi_worker_dataset)
 
 logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 
