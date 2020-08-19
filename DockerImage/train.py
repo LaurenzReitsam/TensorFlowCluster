@@ -20,14 +20,9 @@ def logging(text):
     with open(logfile_name, 'a') as f:
         print("{}  -  {}".format(datetime.datetime.now().strftime("%H:%M:%S"), text), file=f)
 
-def load_data(path):
-    with np.load(path, allow_pickle=True) as f:
-        x_train, y_train = f['x_train'], f['y_train']
-        x_test, y_test = f['x_test'], f['y_test']
-    return (x_train, y_train), (x_test, y_test)
 
 def mnist_dataset():
-    (x_train, y_train), _ = load_data('{}/mnist.npz'.format(DATAPATH))
+    (x_train, y_train), _ = tf.keras.datasets.mnist.load_data()
     x_train = x_train / np.float32(255)
     y_train = y_train.astype(np.int64)
     train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))\
