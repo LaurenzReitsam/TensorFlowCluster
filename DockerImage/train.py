@@ -71,6 +71,8 @@ strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
 BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
 
+STEPS_PER_EPOCH = BUFFER_SIZE // BATCH_SIZE
+
 logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 
 #-----------------------------#
@@ -90,6 +92,7 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 logging("Fitting Model")
 multi_worker_model.fit(multi_worker_dataset,
                       epochs=EPOCHS,
+                      steps_per_epoch=STEPS_PER_EPOCH,
                       callbacks=[tensorboard_callback])
 
 
