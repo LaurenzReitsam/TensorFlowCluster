@@ -20,21 +20,6 @@ def logging(text):
     with open(logfile_name, 'a') as f:
         print("{}  -  {}".format(datetime.datetime.now().strftime("%H:%M:%S"), text), file=f)
 
-def load_data(path):
-    with np.load(path, allow_pickle=True) as f:
-        x_train, y_train = f['x_train'], f['y_train']
-        x_test, y_test = f['x_test'], f['y_test']
-    return (x_train, y_train), (x_test, y_test)
-
-def mnist_dataset(batch_size):
-    (x_train, y_train), _ = load_data('{}/mnist.npz'.format(DATAPATH))
-    x_train = x_train / np.float32(255)
-    y_train = y_train.astype(np.int64)
-    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))\
-                                   .shuffle(BUFFER_SIZE)\
-                                   .batch(BATCH_SIZE)
-    return train_dataset
-
 def build_and_compile_cnn_model():
     model = tf.keras.Sequential([
       tf.keras.Input(shape=(28, 28)),
@@ -76,6 +61,23 @@ STEPS_PER_EPOCH = BUFFER_SIZE // BATCH_SIZE
 logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 
 #-----------------------------#
+# loading the data
+
+datasets, info = tfds.load(name='mnist', with_info=True, as_supervised=True)
+mnist_train, mnist_test = datasets['train'], datasets['test']
+
+# num_train_examples = info.splits['train'].num_examples
+# num_test_examples = info.splits['test'].num_examples
+
+def scale(image, label):
+  image = tf.cast(image, tf.float32)
+  image /= 255
+  return image, label
+
+train_dataset = mnist_train.map(scale).cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+eval_dataset = mnist_test.map(scale).batch(BATCH_SIZE)
+
+#-----------------------------#
 # building and running the model
 
 logging("Loading data.")
@@ -90,9 +92,8 @@ log_dir = TBOARDPATH + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 logging("Fitting Model")
-multi_worker_model.fit(multi_worker_dataset,
+multi_worker_model.fit(train_dataset,
                       epochs=EPOCHS,
-                      steps_per_epoch=STEPS_PER_EPOCH,
                       callbacks=[tensorboard_callback])
 
 
