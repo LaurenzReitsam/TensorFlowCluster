@@ -65,7 +65,7 @@ logging("Starting script.")
 
 BUFFER_SIZE = 10000
 BATCH_SIZE_PER_REPLICA = 64
-EPOCHS = 60
+EPOCHS = 5
 
 strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
