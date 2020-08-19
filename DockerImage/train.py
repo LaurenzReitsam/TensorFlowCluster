@@ -7,9 +7,9 @@ import numpy as np
 import datetime
 import socket
 
-DATAPATH = "./"
-LOGPATH  = "./"
-TBOARDPATH = "./logs/fit"
+DATAPATH = "/usr/src/app"
+LOGPATH  = "/data_volume"
+TBOARDPATH = "/data_volume/logs/fit"
 
 
 hostname = socket.gethostname()
