@@ -42,7 +42,7 @@ spec:
 ---
 
 apiVersion: v1
-kind: Deployment
+kind: ReplicationController
 metadata:
   name: cluster-worker-0
 spec:
@@ -63,8 +63,8 @@ spec:
       containers:
       - name: tensorflow
         image: lreitsam/myrepo-01:latest
-        # resources:
-          # limits:
+        resources:
+          limits:
             # nvidia.com/gpu: 2
         env:
         - name: TF_CONFIG
@@ -101,7 +101,7 @@ spec:
 ---
 
 apiVersion: v1
-kind: Deployment
+kind: ReplicationController
 metadata:
   name: cluster-worker-1
 spec:
@@ -122,8 +122,8 @@ spec:
       containers:
       - name: tensorflow
         image: lreitsam/myrepo-01:latest
-        # resources:
-        #   limits:
+        resources:
+          limits:
             # nvidia.com/gpu: 2
         env:
         - name: TF_CONFIG
@@ -161,7 +161,7 @@ spec:
 ---
 
 apiVersion: v1
-kind: Deployment
+kind: ReplicationController
 metadata:
   name: cluster-tensorboard
 spec:
