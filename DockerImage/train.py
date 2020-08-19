@@ -7,9 +7,9 @@ import numpy as np
 import datetime
 import socket
 
-DATAPATH = "/usr/src/app"
-LOGPATH  = "/data_volume"
-TBOARDPATH = "/data_volume/logs/fit"
+DATAPATH = "./"
+LOGPATH  = "./"
+TBOARDPATH = "./logs/fit"
 
 
 hostname = socket.gethostname()
@@ -26,7 +26,7 @@ def load_data(path):
         x_test, y_test = f['x_test'], f['y_test']
     return (x_train, y_train), (x_test, y_test)
 
-def mnist_dataset(batch_size):
+def mnist_dataset():
     (x_train, y_train), _ = load_data('{}/mnist.npz'.format(DATAPATH))
     x_train = x_train / np.float32(255)
     y_train = y_train.astype(np.int64)
@@ -71,15 +71,13 @@ strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
 BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
 
-STEPS_PER_EPOCH = BUFFER_SIZE // BATCH_SIZE
-
 logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 
 #-----------------------------#
 # building and running the model
 
 logging("Loading data.")
-multi_worker_dataset = mnist_dataset(BATCH_SIZE)
+multi_worker_dataset = mnist_dataset()
 
 STEPS_PER_EPOCH = len(multi_worker_dataset)
 
@@ -87,15 +85,15 @@ logging("Building Model")
 with strategy.scope():
     multi_worker_model = build_and_compile_cnn_model()
 
-print("Create TensorBoard Callback")
-log_dir = TBOARDPATH + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+# print("Create TensorBoard Callback")
+# log_dir = TBOARDPATH + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 logging("Fitting Model")
 multi_worker_model.fit(multi_worker_dataset,
                       epochs=EPOCHS,
                       steps_per_epoch=STEPS_PER_EPOCH,
-                      callbacks=[tensorboard_callback])
+                      callbacks=[])
 
 
 #-----------------------------#
