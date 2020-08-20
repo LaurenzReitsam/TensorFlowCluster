@@ -3,9 +3,11 @@ Code with training definition here
 """
 
 import tensorflow as tf
+import tensorflow_datasets as tfds
 import numpy as np
 import datetime
 import socket
+
 
 DATAPATH = "/usr/src/app"
 LOGPATH  = "/data_volume"
@@ -20,15 +22,10 @@ def logging(text):
     with open(logfile_name, 'a') as f:
         print("{}  -  {}".format(datetime.datetime.now().strftime("%H:%M:%S"), text), file=f)
 
-
-def mnist_dataset():
-    (x_train, y_train), _ = tf.keras.datasets.mnist.load_data()
-    x_train = x_train / np.float32(255)
-    y_train = y_train.astype(np.int64)
-    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))\
-                                   .shuffle(BUFFER_SIZE)\
-                                   .batch(BATCH_SIZE)
-    return train_dataset
+def scale(image, label):
+  image = tf.cast(image, tf.float32)
+  image /= 255
+  return image, label
 
 def build_and_compile_cnn_model():
     model = tf.keras.Sequential([
@@ -72,9 +69,13 @@ logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 # building and running the model
 
 logging("Loading data.")
-multi_worker_dataset = mnist_dataset()
+datasets, info = tfds.load(name='mnist', with_info=True, as_supervised=True)
 
-STEPS_PER_EPOCH = len(multi_worker_dataset)
+mnist_train, mnist_test = datasets['train'], datasets['test']
+train_dataset = mnist_train.map(scale).cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+eval_dataset = mnist_test.map(scale).batch(BATCH_SIZE)
+
+STEPS_PER_EPOCH = 60 #len(train_dataset)
 
 logging("Building Model")
 with strategy.scope():
@@ -85,7 +86,7 @@ with strategy.scope():
 # tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 logging("Fitting Model")
-multi_worker_model.fit(multi_worker_dataset,
+multi_worker_model.fit(train_dataset,
                       epochs=EPOCHS,
                       steps_per_epoch=STEPS_PER_EPOCH,
                       callbacks=[])
