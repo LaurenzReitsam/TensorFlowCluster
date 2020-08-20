@@ -68,18 +68,32 @@ logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 #-----------------------------#
 # building and running the model
 
-logging("Loading data.")
-datasets, info = tfds.load(name='mnist', with_info=True, as_supervised=True)
-
-mnist_train, mnist_test = datasets['train'], datasets['test']
-train_dataset = mnist_train.map(scale).cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
-eval_dataset = mnist_test.map(scale).batch(BATCH_SIZE)
-
-STEPS_PER_EPOCH = 60 #len(train_dataset)
-
 logging("Building Model")
 with strategy.scope():
     multi_worker_model = build_and_compile_cnn_model()
+
+logging("Loading data.")
+
+data_builder = tfds.builder("mnist")
+info = data_builder.info
+datasets = data_builder.as_dataset(split="train")
+
+TRAIN_LENGTH = info.splits['train'].num_examples
+STEPS_PER_EPOCH = TRAIN_LENGTH // BATCH_SIZE
+
+mnist_train, mnist_test = datasets['train'], datasets['test']
+train_dataset = mnist_train.map(scale)
+                           .cache()\
+                           .shuffle(BUFFER_SIZE)\
+                           .batch(BATCH_SIZE)
+
+eval_dataset = mnist_test.map(scale)\
+                         .batch(BATCH_SIZE)
+
+# options = tf.data.Options()
+# options.experimental_distribute.auto_shard_policy = tf.data.experimental\
+#                                                       .Auto_shard_policy.Data
+# train_dataset = train_dataset.with_options(options)
 
 # print("Create TensorBoard Callback")
 # log_dir = TBOARDPATH + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
