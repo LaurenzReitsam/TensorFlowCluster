@@ -5,5 +5,5 @@ COPY train.py /usr/src/app/
 RUN pip install -q -U tfds-nightly
 
 # Download the mnist dataset
-RUN python3 -c "import tfds; tfds.builder('mnist').download_and_prepare()"
+RUN python3 -c "import tensorflow_datasets; tensorflow_datasets.builder('mnist').download_and_prepare()"
 # RUN curl https://s3.amazonaws.com/img-datasets/mnist.npz --output /usr/src/app/mnist.npz
