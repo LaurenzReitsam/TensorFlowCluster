@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   worker-0:
-    build: .
+    image: tensorflow_workers
     container_name: cluster-worker-0
     ports:
       - "5001:5001"
@@ -23,7 +23,7 @@ services:
       - mynet
 
   worker-1:
-    build: .
+    image: tensorflow_workers
     container_name: cluster-worker-1
     ports:
       - "5002:5002"

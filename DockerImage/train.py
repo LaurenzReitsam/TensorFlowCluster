@@ -3,6 +3,7 @@ Code with training definition here
 """
 
 import tensorflow as tf
+import tensorflow_datasets as tfds
 import numpy as np
 import datetime
 import socket
@@ -21,20 +22,10 @@ def logging(text):
     with open(logfile_name, 'a') as f:
         print("{}  -  {}".format(datetime.datetime.now().strftime("%H:%M:%S"), text), file=f)
 
-def load_data(path):
-    with np.load(path, allow_pickle=True) as f:
-        x_train, y_train = f['x_train'], f['y_train']
-        x_test, y_test = f['x_test'], f['y_test']
-    return (x_train, y_train), (x_test, y_test)
-
-def prepare_data(dataset):
-    x,y = multi_worker_dataset
-    x /= 255
-    y = y.astype(np.int64)
-    dataset = tf.data.Dataset.from_tensor_slices((x, y))\
-                                   .shuffle(BUFFER_SIZE)\
-                                   .batch(BATCH_SIZE)
-    return dataset
+def scale(image, label):
+  image = tf.cast(image, tf.float32)
+  image /= 255
+  return image, label
 
 def build_and_compile_cnn_model():
     model = tf.keras.Sequential([
@@ -78,11 +69,13 @@ logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 # building and running the model
 
 logging("Loading data.")
-train_dataset, test_dataset = load_data('{}/mnist.npz'.format(DATAPATH))
-train_dataset = prepare_data(train_dataset)
-test_dataset = prepare_data(test_dataset)
+datasets, info = tfds.load(name='mnist', with_info=True, as_supervised=True)
 
-STEPS_PER_EPOCH = len(train_dataset)
+mnist_train, mnist_test = datasets['train'], datasets['test']
+train_dataset = mnist_train.map(scale).cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+eval_dataset = mnist_test.map(scale).batch(BATCH_SIZE)
+
+STEPS_PER_EPOCH = 60 #len(train_dataset)
 
 logging("Building Model")
 with strategy.scope():
@@ -93,7 +86,7 @@ with strategy.scope():
 # tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 logging("Fitting Model")
-multi_worker_model.fit(train_dataset, test_dataset,
+multi_worker_model.fit(train_dataset,
                       epochs=EPOCHS,
                       steps_per_epoch=STEPS_PER_EPOCH,
                       callbacks=[])
