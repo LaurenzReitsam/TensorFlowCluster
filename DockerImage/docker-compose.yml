@@ -1,0 +1,49 @@
+version: "3.7"
+services:
+  worker-0:
+    build: .
+    container_name: cluster-worker-0
+    ports:
+      - "5001:5001"
+    volumes:
+      - "./testing_volume:/data_volume"
+    environment:
+      - 'NODE_CONFIG={"database": {"data": {"host": "mongo"}, "session": {"host": "redis" }}}'
+      - 'TF_CONFIG={
+                    "cluster": {"worker": ["cluster-worker-0:5001","cluster-worker-1:5002"]},
+                    "task": {
+                    "type": "worker",
+                    "index": "0"
+                    }
+                  }'
+    command:
+      - "/usr/bin/python3"
+      - "/usr/src/app/train.py"
+    networks:
+      - mynet
+
+  worker-1:
+    build: .
+    container_name: cluster-worker-1
+    ports:
+      - "5002:5002"
+    volumes:
+      - "./testing_volume:/data_volume"
+    environment:
+      - 'NODE_CONFIG={"database": {"data": {"host": "mongo"}, "session": {"host": "redis" }}}'
+      - 'TF_CONFIG={
+                    "cluster": {"worker": ["cluster-worker-0:5001","cluster-worker-1:5002"]},
+                    "task": {
+                    "type": "worker",
+                    "index": "1"
+                    }
+                  }'
+    command:
+      - "/usr/bin/python3"
+      - "/usr/src/app/train.py"
+    networks:
+      - mynet
+
+
+networks:
+  mynet:
