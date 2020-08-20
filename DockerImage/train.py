@@ -27,14 +27,14 @@ def load_data(path):
         x_test, y_test = f['x_test'], f['y_test']
     return (x_train, y_train), (x_test, y_test)
 
-def mnist_dataset():
-    (x_train, y_train), _ = load_data('{}/mnist.npz'.format(DATAPATH))
-    x_train = x_train / np.float32(255)
-    y_train = y_train.astype(np.int64)
-    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))\
+def prepare_data(dataset):
+    x,y = multi_worker_dataset
+    x /= 255
+    y = y.astype(np.int64)
+    dataset = tf.data.Dataset.from_tensor_slices((x, y))\
                                    .shuffle(BUFFER_SIZE)\
                                    .batch(BATCH_SIZE)
-    return train_dataset
+    return dataset
 
 def build_and_compile_cnn_model():
     model = tf.keras.Sequential([
@@ -78,9 +78,11 @@ logging("Number of parallel workers: {}".format(strategy.num_replicas_in_sync))
 # building and running the model
 
 logging("Loading data.")
-multi_worker_dataset = mnist_dataset()
+train_dataset, test_dataset = load_data('{}/mnist.npz'.format(DATAPATH))
+train_dataset = prepare_data(train_dataset)
+test_dataset = prepare_data(test_dataset)
 
-STEPS_PER_EPOCH = len(multi_worker_dataset)
+STEPS_PER_EPOCH = len(train_dataset)
 
 logging("Building Model")
 with strategy.scope():
@@ -91,7 +93,7 @@ with strategy.scope():
 # tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 logging("Fitting Model")
-multi_worker_model.fit(multi_worker_dataset,
+multi_worker_model.fit(train_dataset, test_dataset,
                       epochs=EPOCHS,
                       steps_per_epoch=STEPS_PER_EPOCH,
                       callbacks=[])
