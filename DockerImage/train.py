@@ -73,16 +73,15 @@ with strategy.scope():
     multi_worker_model = build_and_compile_cnn_model()
 
 logging("Loading data.")
-
-data_builder = tfds.builder("mnist")
-info = data_builder.info
-datasets = data_builder.as_dataset(split="train")
+# data is already part of the docker image
+datasets, info = tfds.load(name='mnist', with_info=True,
+                           as_supervised=True, download=False)
 
 TRAIN_LENGTH = info.splits['train'].num_examples
 STEPS_PER_EPOCH = TRAIN_LENGTH // BATCH_SIZE
 
 mnist_train, mnist_test = datasets['train'], datasets['test']
-train_dataset = mnist_train.map(scale)
+train_dataset = mnist_train.map(scale)\
                            .cache()\
                            .shuffle(BUFFER_SIZE)\
                            .batch(BATCH_SIZE)
@@ -90,10 +89,12 @@ train_dataset = mnist_train.map(scale)
 eval_dataset = mnist_test.map(scale)\
                          .batch(BATCH_SIZE)
 
-# options = tf.data.Options()
-# options.experimental_distribute.auto_shard_policy = tf.data.experimental\
-#                                                       .Auto_shard_policy.Data
-# train_dataset = train_dataset.with_options(options)
+options = tf.data.Options()
+options.experimental_distribute.auto_shard_policy = tf.data.experimental\
+                                                      .AutoShardPolicy.DATA
+
+train_dataset = train_dataset.with_options(options)
+
 
 # print("Create TensorBoard Callback")
 # log_dir = TBOARDPATH + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -101,6 +102,7 @@ eval_dataset = mnist_test.map(scale)\
 
 logging("Fitting Model")
 multi_worker_model.fit(train_dataset,
+                      validation_data=eval_dataset,
                       epochs=EPOCHS,
                       steps_per_epoch=STEPS_PER_EPOCH,
                       callbacks=[])
