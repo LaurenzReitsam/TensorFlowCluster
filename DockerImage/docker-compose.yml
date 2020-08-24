@@ -8,7 +8,6 @@ services:
     volumes:
       - "./testing_volume:/data_volume"
     environment:
-      - 'NODE_CONFIG={"database": {"data": {"host": "mongo"}, "session": {"host": "redis" }}}'
       - 'TF_CONFIG={
                     "cluster": {"worker": ["cluster-worker-0:5001","cluster-worker-1:5002"]},
                     "task": {
@@ -30,7 +29,6 @@ services:
     volumes:
       - "./testing_volume:/data_volume"
     environment:
-      - 'NODE_CONFIG={"database": {"data": {"host": "mongo"}, "session": {"host": "redis" }}}'
       - 'TF_CONFIG={
                     "cluster": {"worker": ["cluster-worker-0:5001","cluster-worker-1:5002"]},
                     "task": {
