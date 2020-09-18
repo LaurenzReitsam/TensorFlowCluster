@@ -1,4 +1,4 @@
-# Docker Image Definition
+## Docker Image Definition
 
 This directory defines the docker image, which is executed by every worker in the Kubernetes cluster.
 
